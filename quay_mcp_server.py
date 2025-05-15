@@ -45,6 +45,14 @@ async def get_team_members(organization_name: str, team_name: str) -> str:
 
 
 @mcp.tool()
+async def add_team_member(organization_name: str, team_name: str, member_name: str) -> str:
+    url = f"{QUAY_API_BASE}/organization/{organization_name}/team/{team_name}/members/{member_name}"
+    data = await make_request(url, organization_name, method="PUT")
+    print(data)
+    return data
+
+
+@mcp.tool()
 async def get_repositories(organization_name: str) -> str:
     url = f"{QUAY_API_BASE}/repository"
     params = {
