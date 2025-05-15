@@ -9,7 +9,7 @@ QUAY_API_BASE = os.environ["QUAY_URL"] + "/api/v1"
 
 
 async def make_request(
-    url: str, organization_name: str, params: dict[str, Any] = None
+    url: str, organization_name: str, method: str = "GET", params: dict[str, Any] = None
 ) -> dict[str, Any] | None:
     token = os.environ[f"QUAY_TOKEN_{organization_name.upper()}"]
     headers = {
@@ -18,8 +18,8 @@ async def make_request(
     }
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(
-                url, headers=headers, params=params, timeout=30.0
+            response = await client.request(
+                method, url, headers=headers, json=params, timeout=30.0
             )
             response.raise_for_status()
             return response.json()
@@ -51,6 +51,26 @@ async def get_repositories(organization_name: str) -> str:
         "namespace": organization_name,
     }
     data = await make_request(url, organization_name, params=params)
+    print(data)
+    return data
+
+
+@mcp.tool()
+async def create_repository(
+    organization_name: str,
+    repository_name: str,
+    visibility: str = "private",
+    description: str = "",
+) -> str:
+    url = f"{QUAY_API_BASE}/repository"
+    params = {
+        "repository": repository_name,
+        "visibility": visibility,
+        "namespace": organization_name,
+        "description": description,
+        "repo_kind": "image",
+    }
+    data = await make_request(url, organization_name, method="POST", params=params)
     print(data)
     return data
 
